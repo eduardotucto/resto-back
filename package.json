@@ -1,0 +1,21 @@
+{
+  "name": "resto-back",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon index.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^14.3.2",
+    "express": "^4.17.2",
+    "mysql2": "^2.3.3",
+    "sequelize": "^6.14.1"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.15"
+  }
+}
