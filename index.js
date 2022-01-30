@@ -24,12 +24,16 @@ app.use("/categories", require("./routes/categories"));
 app.use("/preparationAreas", require("./routes/preparationAreas"));
 app.use("/products", require("./routes/products"));
 app.use("/variants", require("./routes/variants"));
+app.use("/orders", require("./routes/orders"));
+app.use("/sales", require("./routes/sales"));
+app.use("/details", require("./routes/details"));
 
 
 app.listen(app.get("port"), () => {
 	console.log("server on port", app.get("port"));
 	sequelize
-		.sync({ force: false })
+		.authenticate()
+		// .sync({ force: false })
 		.then(() => {
 			console.log("Connection has been established successfully");
 		})
