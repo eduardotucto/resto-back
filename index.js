@@ -32,8 +32,8 @@ app.use("/details", require("./routes/details"));
 app.listen(app.get("port"), () => {
 	console.log("server on port", app.get("port"));
 	sequelize
-		.authenticate()
-		// .sync({ force: false })
+		// .authenticate()
+		.sync({ force: true })
 		.then(() => {
 			console.log("Connection has been established successfully");
 		})

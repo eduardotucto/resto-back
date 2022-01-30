@@ -46,3 +46,6 @@ Detail.belongsTo(Order);
 
 Product.hasMany(Detail);
 Detail.belongsTo(Product);
+
+Variant.hasMany(Detail);
+Detail.belongsTo(Variant);
