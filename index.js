@@ -13,6 +13,10 @@ app.set("port", process.env.PORT || 3000);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Cors
+// const whiteList = ["https://....", "https://...."];app.use(cors({ origin: whiteList }));
+app.use(cors());
+
 // Routes
 app.get("/", (req, res) => {
 	res.send("Hello world!");
