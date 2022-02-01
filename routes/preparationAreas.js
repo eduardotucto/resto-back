@@ -13,10 +13,10 @@ router.get("/", function (req, res) {
 	if (nombre) where.nombre = { [Op.eq]: nombre };
 	if (_embed) {
 		if (typeof _embed == "string") {
-			include[0] = { association: _embed }; // si solo hay un embed lo usa
+			include[0] = { association: _embed, order: Sequelize.col("id") }; // si solo hay un embed lo usa
 		} else {
 			_embed.forEach((field, i) => {
-				include[i] = { association: field }; // si hay más lo itera
+				include[i] = { association: field, order: Sequelize.col("id") }; // si hay más lo itera
 			});
 		}
 	}
@@ -49,8 +49,21 @@ router.post("/", function (req, res) {
 
 // READ
 router.get("/:id", function (req, res) {
+	const include = [];
+	const { _embed } = req.query;
 	const { id } = req.params;
-	PreparationArea.findByPk(id)
+	if (_embed) {
+		if (typeof _embed == "string") {
+			include[0] = { association: _embed, order: Sequelize.col("id") }; // si solo hay un embed lo usa
+		} else {
+			_embed.forEach((field, i) => {
+				include[i] = { association: field, order: Sequelize.col("id") }; // si hay más lo itera
+			});
+		}
+	}
+	PreparationArea.findByPk(id, {
+		include: include,
+	})
 		.then((resp) => {
 			res.json(resp);
 		})
@@ -73,6 +86,9 @@ router.patch("/:id", function (req, res) {
 			},
 		}
 	)
+		.then(() => {
+			return PreparationArea.findByPk(id);
+		})
 		.then((resp) => {
 			res.json(resp);
 		})

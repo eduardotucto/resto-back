@@ -42,10 +42,10 @@ router.get("/", function (req, res) {
 	if (tableId) where.tableId = { [Op.eq]: tableId };
 	if (_embed) {
 		if (typeof _embed == "string") {
-			include[0] = { association: _embed }; // si solo hay un embed lo usa
+			include[0] = { association: _embed, order: Sequelize.col("id") }; // si solo hay un embed lo usa
 		} else {
 			_embed.forEach((field, i) => {
-				include[i] = { association: field }; // si hay más lo itera
+				include[i] = { association: field, order: Sequelize.col("id") }; // si hay más lo itera
 			});
 		}
 	}
@@ -106,8 +106,21 @@ router.post("/", function (req, res) {
 
 // READ
 router.get("/:id", function (req, res) {
+	const include = [];
+	const { _embed } = req.query;
 	const { id } = req.params;
-	Order.findByPk(id)
+	if (_embed) {
+		if (typeof _embed == "string") {
+			include[0] = { association: _embed, order: Sequelize.col("id") }; // si solo hay un embed lo usa
+		} else {
+			_embed.forEach((field, i) => {
+				include[i] = { association: field, order: Sequelize.col("id") }; // si hay más lo itera
+			});
+		}
+	}
+	Order.findByPk(id, {
+		include: include,
+	})
 		.then((resp) => {
 			res.json(resp);
 		})
@@ -138,19 +151,19 @@ router.patch("/:id", function (req, res) {
 	Order.update(
 		{
 			customerName: customerName,
-            UTC_created_at: UTC_created_at,
-            orderState: orderState,
-            isInTable: isInTable,
-            dinersNumber: dinersNumber,
-            waiterName: waiterName,
-            isDelivery: isDelivery,
-            isToTakeAway: isToTakeAway,
-            wasCanceled: wasCanceled,
-            customerAddress: customerAddress,
-            addressReference: addressReference,
-            customerPhone: customerPhone,
-            amountDue: amountDue,
-            tableId: tableId
+			UTC_created_at: UTC_created_at,
+			orderState: orderState,
+			isInTable: isInTable,
+			dinersNumber: dinersNumber,
+			waiterName: waiterName,
+			isDelivery: isDelivery,
+			isToTakeAway: isToTakeAway,
+			wasCanceled: wasCanceled,
+			customerAddress: customerAddress,
+			addressReference: addressReference,
+			customerPhone: customerPhone,
+			amountDue: amountDue,
+			tableId: tableId,
 		},
 		{
 			where: {
@@ -158,6 +171,9 @@ router.patch("/:id", function (req, res) {
 			},
 		}
 	)
+		.then(() => {
+			return Order.findByPk(id);
+		})
 		.then((resp) => {
 			res.json(resp);
 		})
