@@ -18,6 +18,7 @@ router.get("/", function (req, res) {
 		UTC_created_at,
 		orderId,
 		productId,
+		variantId,
 		_embed,
 	} = req.query;
 	if (sale_price) where.sale_price = { [Op.eq]: sale_price };
@@ -28,6 +29,7 @@ router.get("/", function (req, res) {
 	if (UTC_created_at) where.UTC_created_at = { [Op.eq]: UTC_created_at };
 	if (orderId) where.orderId = { [Op.eq]: orderId };
 	if (productId) where.productId = { [Op.eq]: productId };
+	if (variantId) where.variantId = { [Op.eq]: variantId };
 	if (_embed) {
 		if (typeof _embed == "string") {
 			include[0] = { association: _embed, order: Sequelize.col("id") }; // si solo hay un embed lo usa
@@ -61,6 +63,7 @@ router.post("/", function (req, res) {
 		UTC_created_at,
 		orderId,
 		productId,
+		variantId
 	} = req.body;
 	Detail.create({
 		sale_price: sale_price,
@@ -71,6 +74,7 @@ router.post("/", function (req, res) {
 		UTC_created_at: UTC_created_at,
 		orderId: orderId,
 		productId: productId,
+		variantId: variantId
 	})
 		.then((resp) => {
 			res.json(resp);
@@ -117,6 +121,7 @@ router.patch("/:id", function (req, res) {
 		UTC_created_at,
 		orderId,
 		productId,
+		variantId
 	} = req.body;
 	Detail.update(
 		{
@@ -128,6 +133,7 @@ router.patch("/:id", function (req, res) {
 			UTC_created_at: UTC_created_at,
 			orderId: orderId,
 			productId: productId,
+			variantId: variantId,
 		},
 		{
 			where: {
