@@ -86,14 +86,18 @@ router.patch("/:id", function (req, res) {
 			},
 		}
 	)
-		.then(() => {
-			return Category.findByPk(id);
+		.then((resp) => {
+			if (resp == 0) {
+				throw new Error("Ningun campo ha sido actualizado");
+			} else {
+				return Category.findByPk(id);
+			}
 		})
 		.then((resp) => {
 			res.json(resp);
 		})
 		.catch((err) => {
-			res.json(err);
+			res.status(300).send(err.message);
 		});
 });
 
