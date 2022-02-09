@@ -4,7 +4,8 @@ const sequelize = require("../db");
 class Category extends Model {}
 Category.init(
 	{
-		descripcion: DataTypes.STRING
+		descripcion: DataTypes.STRING,
+		imgUrl: DataTypes.STRING,
 	},
 	{
 		sequelize,
