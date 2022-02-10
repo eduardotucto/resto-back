@@ -11,8 +11,8 @@ app.set("port", process.env.PORT || 3000);
 
 // Middleware
     // Para rellenar el req.body
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
+app.use(express.json({ limit: '20mb' }));
+app.use(express.urlencoded({ limit: '20mb', extended: false }));
 
 // Cors
 // const whiteList = ["https://....", "https://...."];app.use(cors({ origin: whiteList }));

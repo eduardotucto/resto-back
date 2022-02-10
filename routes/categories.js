@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const { Cloudinary } = require("../util/cloudinary");
 
 const Category = require("../database/models/Category");
 
@@ -35,14 +36,22 @@ router.get("/", function (req, res) {
 
 // CREATE
 router.post("/", function (req, res) {
-	const { descripcion } = req.body;
-	Category.create({
-		descripcion: descripcion,
-	})
-		.then((resp) => {
+	const { descripcion, base64Img } = req.body;
+
+	Cloudinary.uploader
+		.upload(base64Img, {
+			upload_preset: "categories",
+		})
+		.then(resp => {
+			return Category.create({
+				descripcion: descripcion,
+				imgUrl: resp.secure_url || "",
+			});
+		})
+		.then(resp => {
 			res.json(resp);
 		})
-		.catch((err) => {
+		.catch(err => {
 			res.json(err);
 		});
 });
@@ -75,28 +84,45 @@ router.get("/:id", function (req, res) {
 // UPDATE
 router.patch("/:id", function (req, res) {
 	const { id } = req.params;
-	const { descripcion } = req.body;
-	Category.update(
-		{
-			descripcion: descripcion,
-		},
-		{
-			where: {
-				id: id,
-			},
-		}
-	)
-		.then((resp) => {
+	const { descripcion, base64Img, URLstring } = req.body;
+
+	const indexOfFirst = URLstring.indexOf("Categories");
+	const publid_id = URLstring.slice(indexOfFirst, URLstring.length - 4);
+
+	Cloudinary.uploader.destroy(publid_id)
+		.then(resp => {
+			if (resp.result == "ok") {
+				return Cloudinary.uploader.upload(base64Img, {
+					upload_preset: "categories",
+				});
+			} else {
+				throw new Error(resp.result);
+			}
+		})
+		.then(resp => {
+			Category.update(
+				{
+					descripcion: descripcion,
+					imgUrl: resp.secure_url || "",
+				},
+				{
+					where: {
+						id: id,
+					},
+				}
+			);
+		})
+		.then(resp => {
 			if (resp == 0) {
 				throw new Error("Ningun campo ha sido actualizado");
 			} else {
 				return Category.findByPk(id);
 			}
 		})
-		.then((resp) => {
+		.then(resp => {
 			res.json(resp);
 		})
-		.catch((err) => {
+		.catch(err => {
 			res.status(300).send(err.message);
 		});
 });

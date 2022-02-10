@@ -1,5 +1,6 @@
 const express = require("express");
 const router = express.Router();
+const { Cloudinary } = require("../util/cloudinary");
 
 const Product = require("../database/models/Product");
 
@@ -39,18 +40,33 @@ router.get("/", function (req, res) {
 
 // CREATE
 router.post("/", function (req, res) {
-	const { nombre, isActive, isInventoryTracked, preparationAreaId, categoryId } = req.body;
-	Product.create({
-		nombre: nombre,
-		isActive: isActive,
-		isInventoryTracked: isInventoryTracked,
-		preparationAreaId: preparationAreaId,
-		categoryId: categoryId,
-	})
-		.then((resp) => {
+	const {
+		nombre,
+		isActive,
+		isInventoryTracked,
+		preparationAreaId,
+		categoryId,
+		base64Img,
+	} = req.body;
+
+	Cloudinary.uploader
+		.upload(base64Img, {
+			upload_preset: "products",
+		})
+		.then(resp => {
+			return Product.create({
+				nombre: nombre,
+				isActive: isActive,
+				isInventoryTracked: isInventoryTracked,
+				preparationAreaId: preparationAreaId,
+				categoryId: categoryId,
+				imgUrl: resp.secure_url || "",
+			});
+		})
+		.then(resp => {
 			res.json(resp);
 		})
-		.catch((err) => {
+		.catch(err => {
 			res.json(err);
 		});
 });
@@ -83,32 +99,57 @@ router.get("/:id", function (req, res) {
 // UPDATE
 router.patch("/:id", function (req, res) {
 	const { id } = req.params;
-	const { nombre, isActive, isInventoryTracked, preparationAreaId, categoryId } = req.body;
-	Product.update(
-		{
-			nombre: nombre,
-			isActive: isActive,
-			isInventoryTracked: isInventoryTracked,
-			preparationAreaId: preparationAreaId,
-			categoryId: categoryId,
-		},
-		{
-			where: {
-				id: id,
-			},
-		}
-	)
-		.then((resp) => {
+	const {
+		nombre,
+		isActive,
+		isInventoryTracked,
+		preparationAreaId,
+		categoryId,
+		base64Img,
+		URLstring,
+	} = req.body;
+
+	const indexOfFirst = URLstring.indexOf("Products");
+	const publid_id = URLstring.slice(indexOfFirst, URLstring.length - 4);
+
+	Cloudinary.uploader.destroy(publid_id)
+		.then(resp => {
+			if (resp.result == "ok") {
+				return Cloudinary.uploader.upload(base64Img, {
+					upload_preset: "products",
+				});
+			} else {
+				throw new Error(resp.result);
+			}
+		})
+		.then(resp => {
+			Product.update(
+				{
+					nombre: nombre,
+					isActive: isActive,
+					isInventoryTracked: isInventoryTracked,
+					preparationAreaId: preparationAreaId,
+					categoryId: categoryId,
+					imgUrl: resp.secure_url || '',
+				},
+				{
+					where: {
+						id: id,
+					},
+				}
+			);
+		})
+		.then(resp => {
 			if (resp == 0) {
 				throw new Error("Ningun campo ha sido actualizado");
 			} else {
 				return Product.findByPk(id);
 			}
 		})
-		.then((resp) => {
+		.then(resp => {
 			res.json(resp);
 		})
-		.catch((err) => {
+		.catch(err => {
 			res.status(300).send(err.message);
 		});
 });
