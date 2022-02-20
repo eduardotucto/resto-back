@@ -97,7 +97,7 @@ router.patch("/:id", function (req, res) {
 	)
 		.then((resp) => {
 			if (resp == 0) {
-				throw new Error("Ningun campo ha sido actualizado");
+				throw new Error("Error al actualizar la presentación: " + descripcion);
 			} else {
 				return Variant.findByPk(id);
 			}

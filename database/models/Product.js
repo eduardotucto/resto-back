@@ -7,6 +7,7 @@ Product.init(
 		nombre: DataTypes.STRING,
 		isActive: DataTypes.BOOLEAN,
 		isInventoryTracked: DataTypes.BOOLEAN,
+		hasVariants: DataTypes.BOOLEAN,
 		imgUrl: DataTypes.STRING,
 	},
 	{

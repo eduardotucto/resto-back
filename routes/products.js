@@ -10,10 +10,11 @@ const { Sequelize, Op } = require("sequelize");
 router.get("/", function (req, res) {
 	const include = [];
 	const where = {};
-	const { nombre, isActive, isInventoryTracked, preparationAreaId, categoryId, _embed } = req.query;
+	const { nombre, isActive, isInventoryTracked, hasVariants, preparationAreaId, categoryId, _embed } = req.query;
 	if (nombre) where.nombre = { [Op.eq]: nombre };
 	if (isActive) where.isActive = { [Op.eq]: isActive };
 	if (isInventoryTracked) where.isInventoryTracked = { [Op.eq]: isInventoryTracked };
+	if (hasVariants) where.hasVariants = { [Op.eq]: hasVariants };
 	if (preparationAreaId) where.preparationAreaId = { [Op.eq]: preparationAreaId };
 	if (categoryId) where.categoryId = { [Op.eq]: categoryId };
 	if (_embed) {
@@ -44,6 +45,7 @@ router.post("/", function (req, res) {
 		nombre,
 		isActive,
 		isInventoryTracked,
+		hasVariants,
 		preparationAreaId,
 		categoryId,
 		base64Img,
@@ -58,6 +60,7 @@ router.post("/", function (req, res) {
 				nombre: nombre,
 				isActive: isActive,
 				isInventoryTracked: isInventoryTracked,
+				hasVariants: hasVariants,
 				preparationAreaId: preparationAreaId,
 				categoryId: categoryId,
 				imgUrl: resp.secure_url || "",
@@ -103,12 +106,14 @@ router.patch("/:id", function (req, res) {
 		nombre,
 		isActive,
 		isInventoryTracked,
+		hasVariants,
 		preparationAreaId,
 		categoryId,
 		base64Img,
 		URLstring,
 	} = req.body;
 
+	// Get the public id of the image to can remove the image
 	const indexOfFirst = URLstring.indexOf("Products");
 	const publid_id = URLstring.slice(indexOfFirst, URLstring.length - 4);
 
@@ -128,6 +133,7 @@ router.patch("/:id", function (req, res) {
 					nombre: nombre,
 					isActive: isActive,
 					isInventoryTracked: isInventoryTracked,
+					hasVariants: hasVariants,
 					preparationAreaId: preparationAreaId,
 					categoryId: categoryId,
 					imgUrl: resp.secure_url || '',
@@ -141,7 +147,7 @@ router.patch("/:id", function (req, res) {
 		})
 		.then(resp => {
 			if (resp == 0) {
-				throw new Error("Ningun campo ha sido actualizado");
+				throw new Error("Error al actualizar el producto: " + nombre);
 			} else {
 				return Product.findByPk(id);
 			}
