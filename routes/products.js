@@ -168,11 +168,19 @@ router.delete("/:id", function (req, res) {
 			id: id,
 		},
 	})
-		.then((resp) => {
-			res.json(resp);
+		.then(resp => {
+			if (resp == 0) {
+				throw new Error("Error al intentar eliminar el recurso");
+			} else {
+				resp = {
+					msg: "Eliminado con exito",
+					elementId: id,
+				};
+				res.json(resp);
+			}
 		})
-		.catch((err) => {
-			res.json(err);
+		.catch(err => {
+			res.status(400).json(err.message);
 		});
 });
 
