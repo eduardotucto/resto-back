@@ -9,6 +9,8 @@ const { Sequelize, Op } = require("sequelize");
 router.get("/", function (req, res) {
 	const include = [];
 	const where = {};
+	let offset = null;
+	let limit = null;
 	const {
 		sale_price,
 		comentario,
@@ -19,6 +21,8 @@ router.get("/", function (req, res) {
 		orderId,
 		productId,
 		variantId,
+		_offset,
+		_limit,
 		_embed,
 	} = req.query;
 	if (sale_price) where.sale_price = { [Op.eq]: sale_price };
@@ -30,6 +34,8 @@ router.get("/", function (req, res) {
 	if (orderId) where.orderId = { [Op.eq]: orderId };
 	if (productId) where.productId = { [Op.eq]: productId };
 	if (variantId) where.variantId = { [Op.eq]: variantId };
+	if (_offset) offset = parseInt(_offset);
+	if (_limit) limit = parseInt(_limit);
 	if (_embed) {
 		if (typeof _embed == "string") {
 			include[0] = { association: _embed, order: Sequelize.col("id") }; // si solo hay un embed lo usa
@@ -43,6 +49,8 @@ router.get("/", function (req, res) {
 		include: include,
 		where: where,
 		order: Sequelize.col("id"),
+		offset: offset,
+		limit: limit,
 	})
 		.then((resp) => {
 			res.json(resp);
