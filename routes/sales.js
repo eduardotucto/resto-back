@@ -9,8 +9,12 @@ const { Sequelize, Op } = require("sequelize");
 router.get("/", function (req, res) {
 	const include = [];
 	const where = {};
+	let offset = null;
+	let limit = null;
+
 	const {
 		identificacionCliente,
+		UTC_created_at,
 		subtotal,
 		igv,
 		descuento,
@@ -19,8 +23,12 @@ router.get("/", function (req, res) {
 		tipo,
 		comprobante,
 		orderId,
+		createdBetween,
+		_offset,
+		_limit,
 		_embed,
 	} = req.query;
+	if (UTC_created_at) where.UTC_created_at = { [Op.gte]: UTC_created_at };
 	if (identificacionCliente) where.identificacionCliente = { [Op.eq]: identificacionCliente };
 	if (subtotal) where.subtotal = { [Op.gte]: subtotal };
 	if (igv) where.igv = { [Op.eq]: igv };
@@ -30,6 +38,11 @@ router.get("/", function (req, res) {
 	if (tipo) where.tipo = { [Op.eq]: tipo };
 	if (comprobante) where.comprobante = { [Op.eq]: comprobante };
     if (orderId) where.orderId = { [Op.eq]: orderId };
+	if (createdBetween) where.UTC_created_at = {
+		[Op.between]: [createdBetween[0], createdBetween[1]],
+	};
+	if (_offset) offset = parseInt(_offset);
+	if (_limit) limit = parseInt(_limit);
 	if (_embed) {
 		if (typeof _embed == "string") {
 			include[0] = { association: _embed, order: Sequelize.col("id") }; // si solo hay un embed lo usa
@@ -43,6 +56,8 @@ router.get("/", function (req, res) {
 		include: include,
 		where: where,
 		order: Sequelize.col("id"),
+		offset: offset,
+		limit: limit,
 	})
 		.then((resp) => {
 			res.json(resp);
@@ -56,6 +71,7 @@ router.get("/", function (req, res) {
 router.post("/", function (req, res) {
 	const {
 		identificacionCliente,
+		UTC_created_at,
 		subtotal,
 		igv,
 		descuento,
@@ -67,6 +83,7 @@ router.post("/", function (req, res) {
 	} = req.body;
 	Sale.create({
 		identificacionCliente: identificacionCliente,
+		UTC_created_at: UTC_created_at,
 		subtotal: subtotal,
 		igv: igv,
 		descuento: descuento,
@@ -114,6 +131,7 @@ router.patch("/:id", function (req, res) {
 	const { id } = req.params;
 	const {
 		identificacionCliente,
+		UTC_created_at,
 		subtotal,
 		igv,
 		descuento,
@@ -126,6 +144,7 @@ router.patch("/:id", function (req, res) {
 	Sale.update(
 		{
 			identificacionCliente: identificacionCliente,
+			UTC_created_at: UTC_created_at,
 			subtotal: subtotal,
 			igv: igv,
 			descuento: descuento,
