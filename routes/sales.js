@@ -11,6 +11,7 @@ router.get("/", function (req, res) {
 	const where = {};
 	let offset = null;
 	let limit = null;
+	let orderedBy = [];
 
 	const {
 		identificacionCliente,
@@ -26,6 +27,8 @@ router.get("/", function (req, res) {
 		createdBetween,
 		_offset,
 		_limit,
+		_sort,
+		_order,
 		_embed,
 	} = req.query;
 	if (UTC_created_at) where.UTC_created_at = { [Op.gte]: UTC_created_at };
@@ -38,11 +41,15 @@ router.get("/", function (req, res) {
 	if (tipo) where.tipo = { [Op.eq]: tipo };
 	if (comprobante) where.comprobante = { [Op.eq]: comprobante };
     if (orderId) where.orderId = { [Op.eq]: orderId };
+
 	if (createdBetween) where.UTC_created_at = {
 		[Op.between]: [createdBetween[0], createdBetween[1]],
 	};
 	if (_offset) offset = parseInt(_offset);
 	if (_limit) limit = parseInt(_limit);
+	if (_sort && _order) {
+		orderedBy = [[_sort, _order]];
+	};
 	if (_embed) {
 		if (typeof _embed == "string") {
 			include[0] = { association: _embed, order: Sequelize.col("id") }; // si solo hay un embed lo usa
@@ -52,10 +59,10 @@ router.get("/", function (req, res) {
 			});
 		}
 	}
-	Sale.findAll({
+	Sale.findAndCountAll({
 		include: include,
 		where: where,
-		order: Sequelize.col("id"),
+		order: orderedBy, // order: [["UTC_created_at", "DESC"]],
 		offset: offset,
 		limit: limit,
 	})
