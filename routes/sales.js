@@ -74,6 +74,31 @@ router.get("/", function (req, res) {
 		});
 });
 
+// INDEX
+router.get("/resume-amounts", async function (req, res) {
+	const where = {};
+	const { createdBetween } = req.query;
+	if (createdBetween)
+		where.UTC_created_at = {
+			[Op.between]: [createdBetween[0], createdBetween[1]],
+		};
+	try {
+		const subtotalSum = await Sale.sum('subtotal', { where })
+		const igvSum = await Sale.sum('igv', { where })
+		const descuentoSum = await Sale.sum('descuento', { where })
+		const montoTotalSum = await Sale.sum('montoTotal', { where })
+
+		res.json({
+			subtotalSum,
+			igvSum,
+			descuentoSum,
+			montoTotalSum,
+		});
+	} catch (err) {
+		res.json(err);
+	}
+});
+
 // CREATE
 router.post("/", function (req, res) {
 	const {
